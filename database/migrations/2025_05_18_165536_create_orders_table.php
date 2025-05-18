@@ -12,18 +12,13 @@ return new class extends Migration {
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->uuid()->primary();
-            $table->uuid('customer_uuid');
+            $table->foreignUuid('customer_uuid')->nullable()->constrained('customers', 'uuid')->nullOnDelete();
             $table->timestamps();
-
-            $table->foreign('customer_uuid')
-                ->references('uuid')
-                ->on('customers')
-                ->nullOnDelete();
         });
 
-        Schema::create('order_items', function (Blueprint $table) {
-            $table->foreignId('order_uuid')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained();
+        Schema::create('order_products', function (Blueprint $table) {
+            $table->foreignUuid('order_uuid')->constrained('orders', 'uuid')->cascadeOnDelete();
+            $table->foreignId('product_id')->nullable()->constrained('products', 'id')->nullOnDelete();
             $table->integer('quantity');
             $table->decimal('unit_price', 10);
             $table->timestamps();
