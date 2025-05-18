@@ -12,5 +12,5 @@ interface OrderRepositoryInterface
      * @return Order
      */
     public function create(string $customerUuid, array $items): Order;
-    public function find(int $id): ?Order;
+    public function find(string $uuid): ?Order;
 }

@@ -2,7 +2,6 @@
 
 namespace App\Repositories\Eloquent;
 
-use App\DTOs\CustomerDTO;
 use App\Models\Customer;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -14,17 +13,15 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
         //
     }
 
-    public function findOrCreate(CustomerDTO $dto): CustomerDTO
+    public function findOrCreate(string $email, string $name): Customer
     {
         try {
-            $customer = $this->model->firstOrCreate(
-                ['email' => $dto->email],
-                ['name' => $dto->name]
+            return $this->model->firstOrCreate(
+                ['email' => $email],
+                ['name' => $name]
             );
-
-            return CustomerDTO::fromModel($customer);
         } catch (UniqueConstraintViolationException $e) {
-            return $this->findOrCreate($dto);
+            return $this->findOrCreate($email, $name);
         }
     }
 }

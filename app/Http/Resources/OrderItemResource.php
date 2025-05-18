@@ -2,14 +2,10 @@
 
 namespace App\Http\Resources;
 
+use App\DTOs\OrderItemDTO;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * @property int $id
- * @property string $name
- * @property mixed $pivot
- */
 class OrderItemResource extends JsonResource
 {
     /**
@@ -19,11 +15,12 @@ class OrderItemResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var OrderItemDTO $this */
         return [
-            'product_id' => $this->id,
-            'product_name' => $this->name,
-            'quantity' => $this->pivot->quantity,
-            'unit_price' => $this->pivot->unit_price,
+            'product_id' => $this->productId,
+            'product_name' => $this->productName,
+            'quantity' => $this->quantity,
+            'unit_price' => $this->unitPrice,
         ];
     }
 }

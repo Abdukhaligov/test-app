@@ -69,6 +69,7 @@ class StoreOrderRequest extends FormRequest
     public function toDTO(): OrderDTO
     {
         $customerDTO = new CustomerDTO($this->customer_uuid, $this->customer_name, $this->customer_email);
+        
         $productsDTO = array_map(
             fn(array $item) => new OrderItemDTO(
                 productId: $item['product_id'],

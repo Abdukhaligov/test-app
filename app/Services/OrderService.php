@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\DTOs\OrderDTO;
-use App\Models\Order;
+use App\Mappers\OrderItemMapper;
+use App\Mappers\OrderMapper;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Contracts\CustomerServiceInterface;
@@ -14,6 +15,7 @@ readonly class OrderService implements OrderServiceInterface
 {
     public function __construct(
         private DatabaseManager            $db,
+        private OrderMapper                $orderMapper,
         private CustomerServiceInterface   $customerService,
         private OrderRepositoryInterface   $orderRepository,
         private ProductRepositoryInterface $productRepository
@@ -22,9 +24,10 @@ readonly class OrderService implements OrderServiceInterface
         //
     }
 
-    //TODO:: Consider returning a Data Transfer Object (DTO) instead of the raw Eloquent model 
-    //       to improve separation of concerns and avoid exposing internal structure.
-    public function create(OrderDTO $orderDTO): Order
+    /**
+     * @throws \Throwable
+     */
+    public function create(OrderDTO $orderDTO): OrderDTO
     {
         return $this->db->transaction(function () use ($orderDTO) {
             // Customer UUID has already been validated in the request; redundant validation can be removed.
@@ -40,15 +43,16 @@ readonly class OrderService implements OrderServiceInterface
                 return $i;
             }, $orderDTO->items);
 
-            $items = array_map(function ($item) {
-                return [
-                    'product_id' => $item->productId,
-                    'quantity' => $item->quantity,
-                    'unit_price' => $item->unitPrice,
-                ];
-            }, $items);
-
-            return $this->orderRepository->create($customerUuid, $items);
+            $items = array_map(fn($i) => OrderItemMapper::toDBFormat($i), $items);
+            
+            return $this->orderMapper->fromModel($this->orderRepository->create($customerUuid, $items));
         });
+    }
+    
+    public function find(string $uuid): OrderDTO
+    {
+        $order = $this->orderRepository->find($uuid);
+
+        return $this->orderMapper->fromModel($order);
     }
 }

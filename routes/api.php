@@ -1,12 +1,9 @@
 <?php
 
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 
-Route::apiResources([
-    'products' => ProductController::class,
-    'customers' => CustomerController::class,
-    'orders' => OrderController::class,
-]);
+Route::prefix('/orders')->group(function () {
+    Route::get('/{uuid}', [OrderController::class, 'index']);
+    Route::post('/', [OrderController::class, 'store']);
+});

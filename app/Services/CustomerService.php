@@ -15,6 +15,8 @@ readonly class CustomerService implements CustomerServiceInterface
 
     public function getCustomer(CustomerDTO $dto): CustomerDTO
     {
-        return $this->customerRepository->findOrCreate($dto);
+        $customer = $this->customerRepository->findOrCreate($dto->email, $dto->name);
+        
+        return new CustomerDTO($customer->uuid, $customer->name, $customer->email);
     }
 }

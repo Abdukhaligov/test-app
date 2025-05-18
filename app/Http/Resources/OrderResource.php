@@ -2,16 +2,10 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Customer;
+use App\DTOs\OrderDTO;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Collection;
 
-/**
- * @property string $uuid
- * @property Customer $customer
- * @property Collection $products
- */
 class OrderResource extends JsonResource
 {
     /**
@@ -21,12 +15,13 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var OrderDTO $this */
         return [
             'id' => $this->uuid,
             'customer_name' => $this->customer->name,
             'customer_email' => $this->customer->email,
-            'total_price' => $this->products->sum('price'),
-            'items' => OrderItemResource::collection($this->products)
+            'total_price' => array_sum(array_column($this->items, 'unitPrice')),
+            'items' => OrderItemResource::collection($this->items)
         ];
     }
 }

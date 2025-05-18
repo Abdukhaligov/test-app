@@ -12,6 +12,11 @@ readonly class OrderRepository implements OrderRepositoryInterface
         //
     }
 
+    /**
+     * @param string $customerUuid
+     * @param array $items
+     * @return Order
+     */
     public function create(string $customerUuid, array $items): Order
     {
         /** @var Order $order */
@@ -22,8 +27,8 @@ readonly class OrderRepository implements OrderRepositoryInterface
         return $order;
     }
 
-    public function find(int $id): ?Order
+    public function find(string $uuid): ?Order
     {
-        return $this->model->with('products')->find($id);
+        return $this->model->with('products')->find($uuid);
     }
 }

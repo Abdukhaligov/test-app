@@ -2,9 +2,9 @@
 
 namespace App\Repositories\Contracts;
 
-use App\DTOs\CustomerDTO;
+use App\Models\Customer;
 
 interface CustomerRepositoryInterface
 {
-    public function findOrCreate(CustomerDTO $dto): CustomerDTO;
+    public function findOrCreate(string $email, string $name): Customer;
 }
