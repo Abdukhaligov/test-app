@@ -8,7 +8,8 @@ class OrderDTO
         public CustomerDTO $customer,
         /** @var OrderItemDTO[] */
         public array       $items,
-        public ?string     $uuid = null
+        public ?string     $uuid = null,
+        public ?float      $totalPrice = null
     )
     {
         //

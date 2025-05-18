@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Mappers\OrderRequestMapper;
 use App\Services\Contracts\CustomerServiceInterface;
 use App\Services\Contracts\OrderServiceInterface;
 
@@ -29,6 +30,10 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request): \Illuminate\Http\JsonResponse
     {
-        return response()->json(OrderResource::make($this->orderService->create($request->toDTO())));
+        return response()->json(
+            OrderResource::make(
+                $this->orderService->create(OrderRequestMapper::toDTO($request))
+            )
+        );
     }
 }

@@ -65,19 +65,4 @@ class StoreOrderRequest extends FormRequest
             'products.*.quantity' => 'required|integer|min:1'
         ];
     }
-
-    public function toDTO(): OrderDTO
-    {
-        $customerDTO = new CustomerDTO($this->customer_uuid, $this->customer_name, $this->customer_email);
-        
-        $productsDTO = array_map(
-            fn(array $item) => new OrderItemDTO(
-                productId: $item['product_id'],
-                quantity: $item['quantity'],
-            ),
-            $this->products
-        );
-
-        return new OrderDTO($customerDTO, $productsDTO);
-    }
 }

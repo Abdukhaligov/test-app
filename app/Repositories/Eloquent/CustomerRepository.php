@@ -15,13 +15,16 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
 
     public function findOrCreate(string $email, string $name): Customer
     {
-        try {
-            return $this->model->firstOrCreate(
-                ['email' => $email],
-                ['name' => $name]
-            );
-        } catch (UniqueConstraintViolationException $e) {
-            return $this->findOrCreate($email, $name);
-        }
+        $attempts = 0;
+
+        do {
+            try {
+                return $this->model->firstOrCreate(
+                    ['email' => $email],
+                    ['name' => $name]);
+            } catch (UniqueConstraintViolationException $e) {
+                if (++$attempts > 3) throw $e;
+            }
+        } while (true);
     }
 }

@@ -20,7 +20,7 @@ class OrderResource extends JsonResource
             'id' => $this->uuid,
             'customer_name' => $this->customer->name,
             'customer_email' => $this->customer->email,
-            'total_price' => array_sum(array_column($this->items, 'unitPrice')),
+            'total_price' => $this->totalPrice,
             'items' => OrderItemResource::collection($this->items)
         ];
     }

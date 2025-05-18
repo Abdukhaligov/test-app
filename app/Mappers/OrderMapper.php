@@ -9,7 +9,7 @@ use App\Models\Order;
 
 class OrderMapper
 {
-    public static function fromModel(Order $model): OrderDTO
+    public function fromModel(Order $model): OrderDTO
     {
         $customer = new CustomerDTO($model->customer->uuid, $model->customer->name, $model->customer->email);
 
