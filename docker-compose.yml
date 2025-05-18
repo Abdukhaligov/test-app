@@ -1,0 +1,33 @@
+version: '3'
+
+x-common-env: &common-env
+    APACHE_RUN_USER: "www-data"
+    APACHE_RUN_GROUP: "www-data"
+    APACHE_LOG_DIR: /var/log/apache2
+    APACHE_RUN_DIR: /var/run/apache2
+    APACHE_PID_FILE: /var/run/apache2/apache2.pid
+    APACHE_LOCK_DIR: /var/lock/apache2
+
+services:
+    app:
+        container_name: app
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8080:80"
+        environment:
+            <<: *common-env
+            DB_HOST: db
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - laravel-net
+        entrypoint: sh -c "apache2 -D FOREGROUND"
+
+networks:
+    laravel-net:
+        driver: bridge
+
+volumes:
+    db_data:
