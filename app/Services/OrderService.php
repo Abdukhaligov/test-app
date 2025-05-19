@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\CustomerDTO;
 use App\DTOs\OrderDTO;
 use App\DTOs\OrderItemDTO;
+use App\Models\Order;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Contracts\CustomerServiceInterface;
@@ -36,39 +37,13 @@ readonly class OrderService implements OrderServiceInterface
             $items = $this->prepareItems($orderDTO->items);
             $order = $this->orderRepository->create($customerUuid, array_map(fn(OrderItemDTO $i) => $i->toArray(), $items));
 
-            $items = $order->products->map(fn($p) => new OrderItemDTO(
-                productId: $p->id,
-                quantity: $p->pivot->quantity,
-                unitPrice: $p->pivot->unit_price,
-                productName: $p->name
-            ));
-
-            return new OrderDTO(
-                new CustomerDTO($order->customer->uuid, $order->customer->name, $order->customer->email),
-                $items->toArray(),
-                $order->uuid,
-                self::calculateTotalPrice(collect($items))
-            );
+            return self::convertOrderToDTO($order);
         });
     }
 
     public function find(string $uuid): OrderDTO
     {
-        $order = $this->orderRepository->find($uuid);
-
-        $items = $order->products->map(fn($p) => new OrderItemDTO(
-            productId: $p->id,
-            quantity: $p->pivot->quantity,
-            unitPrice: $p->pivot->unit_price,
-            productName: $p->name
-        ));
-
-        return new OrderDTO(
-            new CustomerDTO($order->customer->uuid, $order->customer->name, $order->customer->email),
-            $items->toArray(),
-            $order->uuid,
-            self::calculateTotalPrice(collect($items))
-        );
+       return self::convertOrderToDTO($this->orderRepository->find($uuid));
     }
 
     /**
@@ -84,6 +59,27 @@ readonly class OrderService implements OrderServiceInterface
         return collect($items)
             ->map(fn(OrderItemDTO $item) => new OrderItemDTO($item->productId, $item->quantity, $products[$item->productId]))
             ->all();
+    }
+
+    /**
+     * @param Order $order
+     * @return OrderDTO
+     */
+    private static function convertOrderToDTO(Order $order): OrderDTO
+    {
+        $items = $order->products->map(fn($p) => new OrderItemDTO(
+            productId: $p->id,
+            quantity: $p->pivot->quantity,
+            unitPrice: $p->pivot->unit_price,
+            productName: $p->name
+        ));
+
+        return new OrderDTO(
+            new CustomerDTO($order->customer->uuid, $order->customer->name, $order->customer->email),
+            $items->toArray(),
+            $order->uuid,
+            self::calculateTotalPrice(collect($items))
+        );
     }
 
     /**
