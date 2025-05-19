@@ -38,7 +38,11 @@ readonly class ProductRepository implements ProductRepositoryInterface
         foreach ($processedIds as $id) {
             $key = self::CACHE_PREFIX . $id;
             if (isset($cachedProducts[$key])) {
-                $found[$id] = ProductDTO::hydrate($cachedProducts[$key]);
+                $found[$id] = new ProductDTO(
+                    $cachedProducts[$key]['name'],
+                    $cachedProducts[$key]['price'],
+                    $cachedProducts[$key]['id'],
+                );
             } else {
                 $missingIds[] = $id;
             }
@@ -55,14 +59,14 @@ readonly class ProductRepository implements ProductRepositoryInterface
             $missingProducts
         ));
     }
-    
+
     private function getByIdsQuery($ids)
     {
         return $this->model
             ->whereIn('id', $ids)
             ->get()
-            ->map(fn($model) => new ProductDTO( name: $model->name, price: $model->price, id: $model->id));
-    } 
+            ->map(fn($model) => new ProductDTO(name: $model->name, price: $model->price, id: $model->id));
+    }
 
     protected function fetchAndCacheMissingProducts(array $missingIds): array
     {

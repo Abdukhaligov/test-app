@@ -21,13 +21,4 @@ readonly class ProductDTO
             'price' => $this->price
         ];
     }
-
-    public static function hydrate(array $data): self
-    {
-        return new self(
-            name: $data['name'] ?? null,
-            price: $data['price'] ?? null,
-            id: $data['id'] ?? null
-        );
-    }
 }

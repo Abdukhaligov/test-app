@@ -49,8 +49,6 @@ class OrderController extends Controller
             throw \Illuminate\Validation\ValidationException::withMessages($messages);
         }
 
-        return response()->json(
-            OrderResource::make($this->orderService->create(OrderDTO::fromRequest($request)))
-        );
+        return response()->json(OrderResource::make($this->orderService->create($request->toDTO())));
     }
 }
