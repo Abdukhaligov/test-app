@@ -8,11 +8,11 @@ use App\Models\Order;
 class OrderDTO
 {
     public function __construct(
-        public CustomerDTO $customer,
+        public readonly CustomerDTO $customer,
         /** @var OrderItemDTO[] */
-        public array       $items,
-        public ?string     $uuid = null,
-        public ?float      $totalPrice = null
+        public readonly array       $items,
+        public readonly ?string     $uuid = null,
+        public ?float               $totalPrice = null
     )
     {
         //

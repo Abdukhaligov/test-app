@@ -4,7 +4,7 @@ namespace App\DTOs;
 
 use App\Models\Product;
 
-class ProductDTO
+readonly class ProductDTO
 {
     public function __construct(
         public ?string $name = null,
@@ -39,15 +39,6 @@ class ProductDTO
             name: $data['name'] ?? null,
             price: $data['price'] ?? null,
             id: $data['id'] ?? null
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            $data['name'] ?? null,
-            $data['price'] ?? null,
-            $data['id'] ?? null
         );
     }
 }
