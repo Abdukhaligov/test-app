@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\ProductUpdated;
+use App\Listeners\ForgetProductCacheListener;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
@@ -14,6 +16,7 @@ use App\Services\Contracts\ProductServiceInterface;
 use App\Services\CustomerService;
 use App\Services\OrderService;
 use App\Services\ProductService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -61,6 +64,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::listen(
+            ProductUpdated::class,
+            ForgetProductCacheListener::class,
+        );
     }
 }

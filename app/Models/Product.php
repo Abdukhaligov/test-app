@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\ProductUpdated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,4 +17,16 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'price'];
+
+    protected static function booted(): void
+    {
+        static::updated(function (Product $product) {
+            $original = $product->getOriginal('price');
+            $dirty = $product->getDirty();
+
+            if (isset($dirty['price']) && $original != $dirty['price']) {
+                ProductUpdated::dispatch($product->id);
+            }
+        });
+    }
 }

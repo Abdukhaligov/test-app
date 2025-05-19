@@ -19,4 +19,9 @@ readonly class ProductService implements ProductServiceInterface
         return $this->productRepository->findByIds($productIds)
             ->map(fn(ProductDTO $product) => new ProductDTO(price: $product->price, id: $product->id));
     }
+
+    public function forgetProductCache(int $productId): void
+    {
+        $this->productRepository->forgetProductCache($productId);
+    }
 }

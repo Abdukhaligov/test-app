@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
  * @property string $customer_email
  * @property array $products
  */
-class StoreOrderRequest extends FormRequest
+class StoreOrderRequest extends \Illuminate\Foundation\Http\FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -59,8 +59,11 @@ class StoreOrderRequest extends FormRequest
             'products' => 'required|array|min:1',
             //TODO:: Remove the product_id prefix, since it's already nested inside the products array.
             //Note: Laravel's "exists" rule is not optimized - used manual check to avoid N+1 queries.
-            //'products.*.product_id' => 'required|integer|exists:products,id',
-            'products.*.product_id' => 'required|integer',
+            'products.*.product_id' => [
+                'required',
+                //'exists:products,id',
+                'integer'
+            ],
             'products.*.quantity' => 'required|integer|min:1'
         ];
     }

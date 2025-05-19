@@ -7,4 +7,6 @@ use Illuminate\Database\Eloquent\Collection;
 interface ProductRepositoryInterface
 {
     public function findByIds(array $ids): Collection;
+
+    public function forgetProductCache(int $productId): void;
 }
