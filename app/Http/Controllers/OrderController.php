@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Services\Contracts\CustomerServiceInterface;
 use App\Services\Contracts\OrderServiceInterface;
 use App\Services\Contracts\ProductServiceInterface;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 readonly class OrderController extends Controller
@@ -24,7 +26,15 @@ readonly class OrderController extends Controller
      */
     public function index(string $uuid): \Illuminate\Http\JsonResponse
     {
-        return response()->json(OrderResource::make($this->orderService->find($uuid)));
+        if (!$uuid || !Str::isUuid($uuid)) {
+            return response()->json(status: 404);
+        }
+
+        try {
+            return response()->json(OrderResource::make($this->orderService->find($uuid)));
+        } catch (NotFoundException $ignored) {
+            return response()->json(status: 404);
+        }
     }
 
     /**

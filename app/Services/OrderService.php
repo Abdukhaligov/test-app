@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\CustomerDTO;
 use App\DTOs\OrderDTO;
 use App\DTOs\OrderItemDTO;
+use App\Exceptions\NotFoundException;
 use App\Models\Order;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
@@ -41,9 +42,16 @@ readonly class OrderService implements OrderServiceInterface
         });
     }
 
+    /**
+     * @throws NotFoundException
+     */
     public function find(string $uuid): OrderDTO
     {
-       return self::convertOrderToDTO($this->orderRepository->find($uuid));
+        if (!$order = $this->orderRepository->find($uuid)) {
+            throw new NotFoundException('Order not found');
+        }
+
+        return self::convertOrderToDTO($order);
     }
 
     /**
