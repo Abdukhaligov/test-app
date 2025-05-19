@@ -2,8 +2,6 @@
 
 namespace App\DTOs;
 
-use App\Models\Product;
-
 readonly class ProductDTO
 {
     public function __construct(
@@ -22,15 +20,6 @@ readonly class ProductDTO
             'name' => $this->name,
             'price' => $this->price
         ];
-    }
-
-    public static function fromModel(Product $model): self
-    {
-        return new self(
-            name: $model->name,
-            price: $model->price,
-            id: $model->id
-        );
     }
 
     public static function hydrate(array $data): self

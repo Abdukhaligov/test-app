@@ -2,13 +2,13 @@
 
 namespace App\DTOs;
 
-class OrderItemDTO
+readonly class OrderItemDTO
 {
     public function __construct(
-        public readonly int     $productId,
-        public readonly int     $quantity,
-        public ?float           $unitPrice = null,
-        public readonly ?string $productName = null)
+        public int     $productId,
+        public int     $quantity,
+        public ?float  $unitPrice = null,
+        public ?string $productName = null)
     {
         //
     }

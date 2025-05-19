@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\DTOs\OrderDTO;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
-use App\Mappers\OrderRequestMapper;
 use App\Services\Contracts\CustomerServiceInterface;
 use App\Services\Contracts\OrderServiceInterface;
 use App\Services\Contracts\ProductServiceInterface;

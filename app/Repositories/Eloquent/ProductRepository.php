@@ -4,12 +4,14 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use App\DTOs\ProductDTO;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
+    public const CACHE_PREFIX = 'product:';
+
     public function __construct(protected Product $model)
     {
         //   
@@ -18,7 +20,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
     public function findByIds(array $ids, bool $cached = true): Collection
     {
         if (!$cached) {
-            return $this->model->query()->whereIn('id', $ids)->get();
+            return $this->getByIdsQuery($ids);
         }
 
         $processedIds = array_unique($ids);
@@ -26,7 +28,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
             return new Collection();
         }
 
-        $cacheKeys = array_map(fn($id) => "product:{$id}", $processedIds);
+        $cacheKeys = array_map(fn($id) => self::CACHE_PREFIX . $id, $processedIds);
         $cachedProducts = Cache::many($cacheKeys);
 
         // 3. Separate found and missing items
@@ -34,7 +36,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
         $missingIds = [];
 
         foreach ($processedIds as $id) {
-            $key = "product:{$id}";
+            $key = self::CACHE_PREFIX . $id;
             if (isset($cachedProducts[$key])) {
                 $found[$id] = ProductDTO::hydrate($cachedProducts[$key]);
             } else {
@@ -53,19 +55,23 @@ readonly class ProductRepository implements ProductRepositoryInterface
             $missingProducts
         ));
     }
+    
+    private function getByIdsQuery($ids)
+    {
+        return $this->model
+            ->whereIn('id', $ids)
+            ->get()
+            ->map(fn($model) => new ProductDTO( name: $model->name, price: $model->price, id: $model->id));
+    } 
 
     protected function fetchAndCacheMissingProducts(array $missingIds): array
     {
         $ttl = config('cache.ttl.product', 3600);
-        $products = $this->model
-            ->whereIn('id', $missingIds)
-            ->get()
-            ->map(fn($model) => ProductDTO::fromModel($model));
-
+        $products = $this->getByIdsQuery($missingIds);
 
         Cache::putMany(
             $products->mapWithKeys(
-                fn(ProductDTO $dto) => ["product:{$dto->id}" => $dto->toArray()]
+                fn(ProductDTO $dto) => [self::CACHE_PREFIX . $dto->id => $dto->toArray()]
             )->toArray(),
             $ttl
         );
@@ -75,6 +81,6 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
     public function forgetProductCache(int $productId): void
     {
-        Cache::forget("product:{$productId}");
+        Cache::forget(self::CACHE_PREFIX . $productId);
     }
 }

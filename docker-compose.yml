@@ -28,6 +28,3 @@ services:
 networks:
     laravel-net:
         driver: bridge
-
-volumes:
-    db_data:

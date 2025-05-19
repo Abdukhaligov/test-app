@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\CustomerDTO;
 use App\DTOs\OrderDTO;
 use App\DTOs\OrderItemDTO;
 use App\Repositories\Contracts\OrderRepositoryInterface;
@@ -30,42 +31,59 @@ readonly class OrderService implements OrderServiceInterface
     {
         return $this->db->transaction(function () use ($orderDTO) {
             // Customer UUID has already been validated in the request; redundant validation can be removed.
-            $customerUuid = $orderDTO->customerUuid ?? $this->customerService->getCustomer($orderDTO->customer)->uuid;
+            $customerUuid = $orderDTO->customer->uuid ?? $this->customerService->getCustomer($orderDTO->customer)->uuid;
 
             $items = $this->prepareItems($orderDTO->items);
-            
-            $dto = OrderDTO::fromModel($this->orderRepository->create($customerUuid, $items));
-            $dto->totalPrice = self::calculateTotalPrice(collect($dto->items));
+            $order = $this->orderRepository->create($customerUuid, array_map(fn(OrderItemDTO $i) => $i->toArray(), $items));
 
-            return $dto;
+            $items = $order->products->map(fn($p) => new OrderItemDTO(
+                productId: $p->id,
+                quantity: $p->pivot->quantity,
+                unitPrice: $p->pivot->unit_price,
+                productName: $p->name
+            ));
+
+            return new OrderDTO(
+                new CustomerDTO($order->customer->uuid, $order->customer->name, $order->customer->email),
+                $items->toArray(),
+                $order->uuid,
+                self::calculateTotalPrice(collect($items))
+            );
         });
     }
 
     public function find(string $uuid): OrderDTO
     {
         $order = $this->orderRepository->find($uuid);
-        $dto = OrderDTO::fromModel($order);
 
-        $dto->totalPrice = self::calculateTotalPrice(collect($dto->items));
+        $items = $order->products->map(fn($p) => new OrderItemDTO(
+            productId: $p->id,
+            quantity: $p->pivot->quantity,
+            unitPrice: $p->pivot->unit_price,
+            productName: $p->name
+        ));
 
-        return $dto;
+        return new OrderDTO(
+            new CustomerDTO($order->customer->uuid, $order->customer->name, $order->customer->email),
+            $items->toArray(),
+            $order->uuid,
+            self::calculateTotalPrice(collect($items))
+        );
     }
 
     /**
      * @param OrderItemDTO[] $items
-     * @return array
+     * @return OrderItemDTO[]
      */
     private function prepareItems(array $items): array
     {
         $productIds = array_map(fn($pd) => $pd->productId, $items);
-        
-        $products = $this->productRepository->findByIds($productIds)->pluck('price', 'id')->toArray();
-        
-        return collect($items)->map(function ($item) use ($products) {
-            $item->unitPrice = $products[$item->productId];
 
-            return $item->toArray();
-        })->all();
+        $products = $this->productRepository->findByIds($productIds)->pluck('price', 'id')->toArray();
+
+        return collect($items)
+            ->map(fn(OrderItemDTO $item) => new OrderItemDTO($item->productId, $item->quantity, $products[$item->productId]))
+            ->all();
     }
 
     /**
@@ -75,6 +93,6 @@ readonly class OrderService implements OrderServiceInterface
     private static function calculateTotalPrice(Collection $items): float
     {
         /** @var OrderItemDTO $item */
-        return $items->reduce(fn($carry, $item) => $carry + ($item->quantity * $item->unitPrice), 0);
+        return $items->reduce(fn($carry, OrderItemDTO $item) => $carry + ($item->quantity * $item->unitPrice), 0);
     }
 }
