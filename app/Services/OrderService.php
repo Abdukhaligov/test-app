@@ -62,11 +62,10 @@ readonly class OrderService implements OrderServiceInterface
     {
         $productIds = array_map(fn($pd) => $pd->productId, $items);
         
-        //TODO:: Cache product prices and implement an Event/Listener when the price changes.
-        $products = $this->productRepository->findByIds($productIds, ['id', 'price']);
-
+        $products = $this->productRepository->findByIds($productIds)->pluck('price', 'id')->toArray();
+        
         return collect($items)->map(function ($item) use ($products) {
-            $item->unitPrice = $products->find($item->productId)->price;
+            $item->unitPrice = $products[$item->productId];
 
             return OrderItemMapper::toDBFormat($item);
         })->all();

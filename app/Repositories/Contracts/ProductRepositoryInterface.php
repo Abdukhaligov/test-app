@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Collection;
 
 interface ProductRepositoryInterface
 {
-    public function findByIds(array $ids, array $columns = ['*']): Collection;
+    public function findByIds(array $ids): Collection;
 }

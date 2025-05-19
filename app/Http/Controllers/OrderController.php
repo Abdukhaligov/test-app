@@ -7,12 +7,15 @@ use App\Http\Resources\OrderResource;
 use App\Mappers\OrderRequestMapper;
 use App\Services\Contracts\CustomerServiceInterface;
 use App\Services\Contracts\OrderServiceInterface;
+use App\Services\Contracts\ProductServiceInterface;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
     public function __construct(
         protected readonly CustomerServiceInterface $customerService,
-        protected readonly OrderServiceInterface    $orderService)
+        protected readonly OrderServiceInterface    $orderService,
+        protected readonly ProductServiceInterface  $productService)
     {
         //
     }
@@ -27,9 +30,24 @@ class OrderController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * @throws ValidationException
      */
     public function store(StoreOrderRequest $request): \Illuminate\Http\JsonResponse
     {
+        $productIds = collect($request->get('products'))->pluck('product_id');
+        $existingIds = $this->productService->findByIds($productIds->toArray())->map(fn($pd) => $pd->id);
+        
+        $invalidIds = $productIds->diff($existingIds);
+        
+        if ($invalidIds->isNotEmpty()) {
+            $messages = [];
+            foreach ($invalidIds as $key => $invalidId) {
+                $messages['products.' . $key . '.product_id'] = 'Invalid product id: ' . $invalidId;
+            }
+
+            throw \Illuminate\Validation\ValidationException::withMessages($messages);
+        }
+
         return response()->json(
             OrderResource::make(
                 $this->orderService->create(OrderRequestMapper::toDTO($request))

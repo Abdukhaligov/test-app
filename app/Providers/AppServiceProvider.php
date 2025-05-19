@@ -10,8 +10,10 @@ use App\Repositories\Eloquent\OrderRepository;
 use App\Repositories\Eloquent\ProductRepository;
 use App\Services\Contracts\CustomerServiceInterface;
 use App\Services\Contracts\OrderServiceInterface;
+use App\Services\Contracts\ProductServiceInterface;
 use App\Services\CustomerService;
 use App\Services\OrderService;
+use App\Services\ProductService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -46,6 +48,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             OrderServiceInterface::class,
             OrderService::class
+        );
+        
+        $this->app->bind(
+            ProductServiceInterface::class,
+            ProductService::class
         );
     }
 
