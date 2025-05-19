@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use App\DTOs\ProductDTO;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
@@ -25,13 +26,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
             return new Collection();
         }
 
-        // 1. Generate cache keys for all requested IDs
-        $cacheKeys = array_map(
-            fn($id) => "product:{$id}",
-            $processedIds
-        );
-
-        // 2. Attempt to retrieve all cached items at once
+        $cacheKeys = array_map(fn($id) => "product:{$id}", $processedIds);
         $cachedProducts = Cache::many($cacheKeys);
 
         // 3. Separate found and missing items
@@ -40,8 +35,8 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
         foreach ($processedIds as $id) {
             $key = "product:{$id}";
-            if (isset($cachedProducts[$key]) && $cachedProducts[$key] !== null) {
-                $found[$id] = $cachedProducts[$key];
+            if (isset($cachedProducts[$key])) {
+                $found[$id] = ProductDTO::hydrate($cachedProducts[$key]);
             } else {
                 $missingIds[] = $id;
             }
@@ -52,26 +47,32 @@ readonly class ProductRepository implements ProductRepositoryInterface
             ? $this->fetchAndCacheMissingProducts($missingIds)
             : [];
 
-        // 5. Merge results while preserving order
-        return new Collection(array_replace(array_flip($processedIds), $found, $missingProducts));
+        return new Collection(array_replace(
+            array_flip($processedIds),
+            $found,
+            $missingProducts
+        ));
     }
 
     protected function fetchAndCacheMissingProducts(array $missingIds): array
     {
         $ttl = config('cache.ttl.product', 3600);
-
-        $missingProducts = $this->model
+        $products = $this->model
             ->whereIn('id', $missingIds)
             ->get()
-            ->keyBy('id');
+            ->map(fn($model) => ProductDTO::fromModel($model));
 
-        // Cache new items in bulk
-        Cache::putMany($missingProducts->mapWithKeys(fn($product) => ["product:{$product->id}" => $product])->toArray(), $ttl);
 
-        return $missingProducts->all();
+        Cache::putMany(
+            $products->mapWithKeys(
+                fn(ProductDTO $dto) => ["product:{$dto->id}" => $dto->toArray()]
+            )->toArray(),
+            $ttl
+        );
+
+        return $products->keyBy('id')->all();
     }
 
-    // Simple cache invalidation for individual products
     public function forgetProductCache(int $productId): void
     {
         Cache::forget("product:{$productId}");

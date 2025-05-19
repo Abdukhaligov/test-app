@@ -17,6 +17,6 @@ readonly class ProductService implements ProductServiceInterface
     public function findByIds(array $productIds): Collection
     {
         return $this->productRepository->findByIds($productIds)
-            ->map(fn($product) => new ProductDTO(price: $product['price'], id: $product['id']));
+            ->map(fn(ProductDTO $product) => new ProductDTO(price: $product->price, id: $product->id));
     }
 }

@@ -12,4 +12,13 @@ class OrderItemDTO
     {
         //
     }
+
+    public function toArray(): array
+    {
+        return [
+            'product_id' => $this->productId,
+            'quantity' => $this->quantity,
+            'unit_price' => $this->unitPrice
+        ];
+    }
 }

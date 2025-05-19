@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTOs\OrderDTO;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Mappers\OrderRequestMapper;
@@ -49,9 +50,7 @@ class OrderController extends Controller
         }
 
         return response()->json(
-            OrderResource::make(
-                $this->orderService->create(OrderRequestMapper::toDTO($request))
-            )
+            OrderResource::make($this->orderService->create(OrderDTO::fromRequest($request)))
         );
     }
 }

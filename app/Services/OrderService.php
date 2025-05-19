@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\DTOs\OrderDTO;
 use App\DTOs\OrderItemDTO;
-use App\Mappers\OrderItemMapper;
-use App\Mappers\OrderMapper;
 use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Services\Contracts\CustomerServiceInterface;
@@ -17,7 +15,6 @@ readonly class OrderService implements OrderServiceInterface
 {
     public function __construct(
         private DatabaseManager            $db,
-        private OrderMapper                $orderMapper,
         private CustomerServiceInterface   $customerService,
         private OrderRepositoryInterface   $orderRepository,
         private ProductRepositoryInterface $productRepository
@@ -37,7 +34,7 @@ readonly class OrderService implements OrderServiceInterface
 
             $items = $this->prepareItems($orderDTO->items);
             
-            $dto = $this->orderMapper->fromModel($this->orderRepository->create($customerUuid, $items));
+            $dto = OrderDTO::fromModel($this->orderRepository->create($customerUuid, $items));
             $dto->totalPrice = self::calculateTotalPrice(collect($dto->items));
 
             return $dto;
@@ -47,7 +44,7 @@ readonly class OrderService implements OrderServiceInterface
     public function find(string $uuid): OrderDTO
     {
         $order = $this->orderRepository->find($uuid);
-        $dto = $this->orderMapper->fromModel($order);
+        $dto = OrderDTO::fromModel($order);
 
         $dto->totalPrice = self::calculateTotalPrice(collect($dto->items));
 
@@ -67,7 +64,7 @@ readonly class OrderService implements OrderServiceInterface
         return collect($items)->map(function ($item) use ($products) {
             $item->unitPrice = $products[$item->productId];
 
-            return OrderItemMapper::toDBFormat($item);
+            return $item->toArray();
         })->all();
     }
 

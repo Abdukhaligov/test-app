@@ -2,6 +2,8 @@
 
 namespace App\DTOs;
 
+use App\Models\Product;
+
 class ProductDTO
 {
     public function __construct(
@@ -11,5 +13,41 @@ class ProductDTO
     )
     {
         //
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'price' => $this->price
+        ];
+    }
+
+    public static function fromModel(Product $model): self
+    {
+        return new self(
+            name: $model->name,
+            price: $model->price,
+            id: $model->id
+        );
+    }
+
+    public static function hydrate(array $data): self
+    {
+        return new self(
+            name: $data['name'] ?? null,
+            price: $data['price'] ?? null,
+            id: $data['id'] ?? null
+        );
+    }
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['name'] ?? null,
+            $data['price'] ?? null,
+            $data['id'] ?? null
+        );
     }
 }

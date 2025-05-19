@@ -58,7 +58,7 @@ class StoreOrderRequest extends FormRequest
 
             'products' => 'required|array|min:1',
             //TODO:: Remove the product_id prefix, since it's already nested inside the products array.
-            //Note:: Laravel "exists" rule checking it via lazy loading, so we should handle it by our own
+            //Note: Laravel's "exists" rule is not optimized - used manual check to avoid N+1 queries.
             //'products.*.product_id' => 'required|integer|exists:products,id',
             'products.*.product_id' => 'required|integer',
             'products.*.quantity' => 'required|integer|min:1'
