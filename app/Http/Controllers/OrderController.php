@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\DTOs\OrderDTO;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Services\Contracts\CustomerServiceInterface;
@@ -10,7 +9,7 @@ use App\Services\Contracts\OrderServiceInterface;
 use App\Services\Contracts\ProductServiceInterface;
 use Illuminate\Validation\ValidationException;
 
-class OrderController extends Controller
+readonly class OrderController extends Controller
 {
     public function __construct(
         protected readonly CustomerServiceInterface $customerService,
