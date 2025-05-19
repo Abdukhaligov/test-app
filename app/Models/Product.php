@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property mixed $name
- * @property mixed $price
- * @property mixed $id
+ * @property string $name
+ * @property float $price
+ * @property int $id
  */
 class Product extends Model
 {

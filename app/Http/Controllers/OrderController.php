@@ -35,6 +35,7 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request): \Illuminate\Http\JsonResponse
     {
+        //Note: Laravel's "exists" rule is not optimized - used manual check to avoid N+1 queries.
         $productIds = collect($request->get('products'))->pluck('product_id');
         $existingIds = $this->productService->findByIds($productIds->toArray())->map(fn($pd) => $pd->id);
         
